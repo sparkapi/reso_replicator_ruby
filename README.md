@@ -1,5 +1,5 @@
 # Overview
-This script is an example of how to replicate data, then periodically retrieve newly modified data, to be used to keep your local data in sync with data available via the Spark API. It is meant to be scheduled to run at a regular interval (e.g. as a cron job, etc.).
+This script is an example of how to replicate data, then periodically retrieve newly modified data, to be used to keep your local data in sync with data available via the [RESO Web API](http://sparkplatform.com/docs/reso/overview). It is meant to be scheduled to run at a regular interval (e.g. as a cron job, etc.).
 * The first time it is run, it retrieves the data for all listings available to your access token via the `/listings` resource, creating a local `listings.json` file
 * Subsequent runs download `listings` that have been modified since the last time the script checked for new data and save them to time-stamped `updated_listing` files.
 
@@ -10,6 +10,8 @@ Whenever possible, this script also substitutes human-friendly values in for enc
 To properly use this script, you must have an API key with a "replication" role, which allows larger requests than a normal API key. Without it, you are limited to pulling 25 records per API call. This script can still work with these updates:
 * Change `1000` to `25` in the two pieces of code that calculate the `number_of_requests` needed to pull all data
 * Change all `:$top => 1000` parameters to `:$top => 25`
+
+This script uses the [Spark API Ruby client](https://github.com/sparkapi/spark_api).
 
 # Improvements
 - [ ] Translate custom field names
