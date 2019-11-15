@@ -8,6 +8,7 @@ This script does _not_ merge newly modified data with the originally replicated 
 Whenever possible, this script also substitutes human-friendly values in for encoded strings in the API responses (necessary when certain values contain spaces and special characters).
 
 To properly use this script, you must have an API key with a "replication" role, which allows larger requests than a normal API key. Without it, you are limited to pulling 25 records per API call. This script can still work with these updates:
+* Change the `config.endpoint` to `https://sparkapi.com`
 * Change `1000` to `25` in the two pieces of code that calculate the `number_of_requests` needed to pull all data
 * Change all `:$top => 1000` parameters to `:$top => 25`
 
