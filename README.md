@@ -19,3 +19,4 @@ This script uses the [Spark API Ruby client](https://github.com/sparkapi/spark_a
 - [ ] Log full API requests to console for debugging purposes
 - [ ] Allow users to specify how many records to pull in each request, and update the number of calls needed accordingly
 - [ ] Add support for additional resources (`/Office`, `Member`)
+- [ ] Decrease memory required by writing API response data to file for each call rather than once at the end
