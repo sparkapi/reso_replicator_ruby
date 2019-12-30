@@ -75,10 +75,11 @@ end
 # determine run mode based on whether listings.json exists or not
 if File.file?("listings.json")
   run_mode = "update_recent"
+  puts "Run mode: update"
 else
   run_mode = "initial_replication"
+  puts "Run mode: initial replication"
 end
-puts "run mode: #{run_mode}"
 
 # read in last updated time...
 last_updated = nil # properly scope variable
@@ -103,19 +104,25 @@ if run_mode == "initial_replication"
                                            :$select => "ListingKey"
                                          }))
   number_of_records = initial_request["@odata.count"]
-  puts "number_of_records: " + number_of_records.to_s
-  if (number_of_records % 1000) == 0
-    number_of_requests = (number_of_records / 1000)
+  puts "Total number of records: " + number_of_records.to_s
+
+  puts "Enter the number of listings to pull per API call (max. 1000):"
+  records_per_call = gets.chomp.to_i
+
+  if (number_of_records % records_per_call) == 0
+    number_of_requests = (number_of_records / records_per_call)
   else
-    number_of_requests = (number_of_records / 1000) + 1
+    number_of_requests = (number_of_records / records_per_call) + 1
   end
-  puts "number_of_requests: " + number_of_requests.to_s
+  puts "Number of requests: " + number_of_requests.to_s
 
   results = []
   skiptoken = "" # first request with a blank skiptoken
-  number_of_requests.times {
+
+  number_of_requests.times { |index|
+    puts "Making request number #{index + 1}..."
     listings = (SparkApi.client.get("/Property", {
-                                      :$top => 1000,
+                                      :$top => records_per_call,
                                       :$expand=>"Media,CustomFields",
                                       :$skiptoken => skiptoken
                                     }))
@@ -126,9 +133,11 @@ if run_mode == "initial_replication"
     results += listings["value"]
     unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
       skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
-      puts "skiptoken for next request: #{skiptoken}"
+      puts "API call complete"
+      puts "$skiptoken for next request: #{skiptoken}"
     else
-      puts "no skiptoken; last request"
+      puts "API call complete"
+      puts "Requests complete"
     end
   }
 
@@ -147,19 +156,24 @@ if run_mode == 'update_recent'
                                            :$select => 'ListingKey'
                                          }))
   number_of_records = initial_request["@odata.count"]
-  puts 'number_of_records: ' + number_of_records.to_s
-  if (number_of_records % 1000) == 0
-   number_of_requests = (number_of_records / 1000)
+  puts "Number of new or updated records: " + number_of_records.to_s
+
+  puts "Enter the number of listings to pull per API call (max. 1000):"
+  records_per_call = gets.chomp.to_i
+
+  if (number_of_records % records_per_call) == 0
+   number_of_requests = (number_of_records / records_per_call)
   else
-   number_of_requests = (number_of_records / 1000) + 1
+   number_of_requests = (number_of_records / records_per_call) + 1
   end
-  puts 'number_of_requests: ' + number_of_requests.to_s
+  puts "Number of requests: " + number_of_requests.to_s
 
   results = []
   skiptoken = "" # first request without skiptoken
-  number_of_requests.times {
+  number_of_requests.times { |index|
+    puts "Making request number #{index + 1}..."
     listings = (SparkApi.client.get("/Property", {
-                                      :$top => 1000,
+                                      :$top => records_per_call,
                                       :$filter => "ModificationTimestamp gt #{last_updated}",
                                       :$expand=>"Media,CustomFields",
                                       :$skiptoken => skiptoken
@@ -170,9 +184,11 @@ if run_mode == 'update_recent'
     results += listings["value"]
     unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
       skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
-      puts "skiptoken for next request: #{skiptoken}"
+      puts "API call complete"
+      puts "$skiptoken for next request: #{skiptoken}"
     else
-      puts "no skiptoken; last request"
+      puts "API call complete"
+      puts "Requests complete"
     end
   }
 
