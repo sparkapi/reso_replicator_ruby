@@ -5,18 +5,18 @@ This script is an example of how to replicate data, then periodically retrieve n
 
 This script does _not_ merge newly modified data with the originally replicated data. How that is done will depend on how you are storing the data.
 
-Whenever possible, this script also substitutes human-friendly values in for encoded strings in the API responses (necessary when certain values contain spaces and special characters).
+Whenever possible, this script also substitutes human-friendly values for encoded strings in the API responses (necessary when certain keys and values contain spaces and special characters), in:
+* Field values
+* CustomField names
+* Media labels
 
-To properly use this script, you must have an API key with a "replication" role, which allows larger requests than a normal API key. Without it, you are limited to pulling 25 records per API call. This script can still work with these updates:
-* Change the `config.endpoint` to `https://sparkapi.com`
-* Change `1000` to `25` in the two pieces of code that calculate the `number_of_requests` needed to pull all data
-* Change all `:$top => 1000` parameters to `:$top => 25`
+To properly use this script, you should have an API key with a "replication" role, which allows larger requests than a normal API key. Without it, you are limited to pulling a maximum of 25 records per API call, and you must change the `config.endpoint` to `https://sparkapi.com`.
 
 This script uses the [Spark API Ruby client](https://github.com/sparkapi/spark_api).
 
 # Improvements
-- [ ] Translate custom field names
+- [x] Translate custom field names
 - [ ] Log full API requests to console for debugging purposes
-- [ ] Allow users to specify how many records to pull in each request, and update the number of calls needed accordingly
-- [ ] Add support for additional resources (`/Office`, `Member`)
+- [x] Allow users to specify how many records to pull in each request, and update the number of calls needed accordingly
+- [ ] Add support for additional resources (`/Office`, `/Member`)
 - [ ] Decrease memory required by writing API response data to file for each call rather than once at the end

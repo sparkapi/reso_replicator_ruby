@@ -71,7 +71,7 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
       end
     end
 
-    # "Media": [ { "MediaCategory": b__...
+    # handle MediaCategory
     listing["Media"].each do |media_rec|
       media_category = media_rec["MediaCategory"]
       if media_category.slice(0,3) == "b__"
