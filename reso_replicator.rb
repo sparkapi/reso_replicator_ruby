@@ -87,9 +87,25 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
       end
     end
 
-    # CustomFields: CustomFieldsKey, code, code, code...
-
-
+    # handle CustomFields
+    new_customs = {} # build a new hash to swap in
+    custom_fields = listing["CustomFields"][0]
+    custom_fields.each do |key, value|
+      if key.slice(0,3) == "b__"
+        readable = metadata_xml.xpath( # check for readable value to be swapped in
+          "//Schema/
+          EntityType[@Name=\"CustomFields\"]/
+          Property[@Name=\"#{key}\"]/
+          Annotation"
+        ).attr("String").to_str
+        if !!readable
+          new_customs[readable] = value
+        end
+      else
+        new_customs[key] = value
+      end
+    end
+    listing["CustomFields"][0] = new_customs
   end
 end
 
@@ -140,7 +156,6 @@ if run_mode == "initial_replication"
   results = []
   skiptoken = "" # first request with a blank skiptoken
 
-  number_of_requests = 1
   number_of_requests.times { |index|
     puts "Making request number #{index + 1}..."
     listings = (SparkApi.client.get("/Property", {
