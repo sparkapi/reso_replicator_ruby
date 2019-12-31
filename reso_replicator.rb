@@ -28,6 +28,7 @@ fields_to_lookup = []
 metadata_xml.xpath("//Schema/EnumType/@Name").each do |el|
   fields_to_lookup << el.to_str
 end
+# puts fields_to_lookup
 
 def swap_readable_values(listings, fields_to_lookup, metadata_xml)
   # Make the human-readable substitutions
@@ -69,6 +70,26 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
 
       end
     end
+
+    # "Media": [ { "MediaCategory": b__...
+    listing["Media"].each do |media_rec|
+      media_category = media_rec["MediaCategory"]
+      if media_category.slice(0,3) == "b__"
+        readable = metadata_xml.xpath( # check for readable value to be swapped in
+          "//Schema/
+          EnumType[@Name=\"MediaCategory\"]/
+          Member[@Name=\"#{media_category}\"]/
+          Annotation"
+        ).attr("String")
+        if !!readable
+          media_rec["MediaCategory"] = readable
+        end
+      end
+    end
+
+    # CustomFields: CustomFieldsKey, code, code, code...
+
+
   end
 end
 
@@ -119,6 +140,7 @@ if run_mode == "initial_replication"
   results = []
   skiptoken = "" # first request with a blank skiptoken
 
+  number_of_requests = 1
   number_of_requests.times { |index|
     puts "Making request number #{index + 1}..."
     listings = (SparkApi.client.get("/Property", {
