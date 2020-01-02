@@ -14,7 +14,7 @@ SparkApi.configure do |config|
     config.middleware = :reso_api
     config.version = "v1"
     config.endpoint = "https://replication.sparkapi.com"
-    config.timeout = 30 # extending default timeout, for our large requests
+    config.timeout = 45 # extending default timeout, for our large requests
 end
 
 SparkApi.client.session = SparkApi::Authentication::OAuthSession.new({ :access_token => "YOUR_ACCESS_TOKEN_HERE" })
@@ -106,6 +106,7 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
       end
     end
     listing["CustomFields"][0] = new_customs
+
   end
 end
 
@@ -164,18 +165,19 @@ if run_mode == "initial_replication"
                                       :$skiptoken => skiptoken
                                     }))
 
+    puts "API call complete"
+    unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
+      skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
+      puts "$skiptoken for next request: #{skiptoken}"
+    else
+      puts "Requests complete"
+    end
+
+    puts "Swapping encoded values for readable ones"
     swap_readable_values(listings, fields_to_lookup, metadata_xml)
 
     # note: concatenating many responses into a single array before writing out has the potential to cause memory issues
     results += listings["value"]
-    unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
-      skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
-      puts "API call complete"
-      puts "$skiptoken for next request: #{skiptoken}"
-    else
-      puts "API call complete"
-      puts "Requests complete"
-    end
   }
 
   file = File.open("listings.json", "w")
@@ -215,18 +217,18 @@ if run_mode == 'update_recent'
                                       :$expand=>"Media,CustomFields",
                                       :$skiptoken => skiptoken
                                    }))
+    puts "API call complete"
+    unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
+      skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
+      puts "$skiptoken for next request: #{skiptoken}"
+    else
+      puts "Requests complete"
+    end
 
+    puts "Swapping encoded values for readable ones"
     swap_readable_values(listings, fields_to_lookup, metadata_xml)
 
     results += listings["value"]
-    unless listings["@odata.nextLink"].nil? # the last page of results does not return a skiptoken
-      skiptoken = CGI.parse(URI.parse(listings["@odata.nextLink"]).query)["$skiptoken"][0]
-      puts "API call complete"
-      puts "$skiptoken for next request: #{skiptoken}"
-    else
-      puts "API call complete"
-      puts "Requests complete"
-    end
   }
 
   # update results
