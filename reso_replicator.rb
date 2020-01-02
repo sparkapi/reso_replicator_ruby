@@ -198,6 +198,11 @@ if run_mode == 'update_recent'
   number_of_records = initial_request["@odata.count"]
   puts "Number of new or updated records: " + number_of_records.to_s
 
+  if (number_of_records == 0)
+    puts "No records have been updated since last run; exiting"
+    exit(true)
+  end
+  
   puts "Enter the number of listings to pull per API call (max. 1000):"
   records_per_call = gets.chomp.to_i
 
