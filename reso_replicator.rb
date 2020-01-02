@@ -82,7 +82,7 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
           Annotation"
         ).attr("String")
         if !!readable
-          media_rec["MediaCategory"] = readable.
+          media_rec["MediaCategory"] = readable.to_str
         end
       end
     end
@@ -99,6 +99,7 @@ def swap_readable_values(listings, fields_to_lookup, metadata_xml)
           Annotation"
         ).attr("String")
         if !!readable
+          readable = readable.to_str
           new_customs[readable] = value
         end
       else
